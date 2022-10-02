@@ -1,4 +1,6 @@
 import argparse
+from tqdm import tqdm
+import concurrent.futures
 from urllib.parse import urlparse
 
 from crawler import ImmunefiCrawler
@@ -7,6 +9,13 @@ from crawler import ImmunefiCrawler
 immunefi_crawler = ImmunefiCrawler()
 downloader = lambda x: print(x)
 
+
+def run(func, arg_iter):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = list(tqdm(executor.map(func, arg_iter), total=len(arg_iter)))
+    return results
+
+
 def download(url):
     assets = immunefi_crawler.get_assets(url)
     downloader(assets)
@@ -14,7 +23,7 @@ def download(url):
 
 def download_all():
     bounties = immunefi_crawler.get_all()
-    print(bounties)
+    run(immunefi_crawler.get_assets, bounties)
 
 
 def main():
