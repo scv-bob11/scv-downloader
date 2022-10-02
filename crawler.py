@@ -31,14 +31,6 @@ class ImmunefiCrawler:
         return assets_list
 
 
-    def get_all_count(self, filters={'programType': ['Smart Contract']}):
-        params = self.make_param(filters)
-        r = requests.get(f'{self.immunefi_base_url}/explore/?filter={urllib.parse.quote(params)}')
-        bs = BeautifulSoup(r.content, 'html.parser')
-        text = bs.find_all(lambda tag:tag.name=="div" and "Showing" in tag.text)[-1].text
-        return int(re.search('\d+', text).group())
-
-
     def get_all(self, filters={'programType': ['Smart Contract']}):
         chr_options = webdriver.ChromeOptions()
         chr_options.add_argument('headless')
@@ -52,13 +44,15 @@ class ImmunefiCrawler:
         bounties = list()
         while True:
             try:
-                WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div/main/section/div[3]/div/a')))
+                WebDriverWait(driver, 0.5).until(EC.presence_of_element_located((By.XPATH, '//*[@id="__next"]/div/main/section/div[3]/div/a')))
                 driver.find_element(By.XPATH, '//*[@id="__next"]/div/main/section/div[3]/div/a').click()
             except:
                 ul = driver.find_elements(By.TAG_NAME, 'ul')[1]
-                for li in ul.find_elements(By.TAG_NAME, 'li'):
-                    bounties.append(li.find_element(By.TAG_NAME, 'a').get_attribute('href'))
                 break
+
+        for li in ul.find_elements(By.TAG_NAME, 'li'):
+            bounties.append(li.find_element(By.TAG_NAME, 'a').get_attribute('href'))
+
         driver.quit()
 
         return bounties
@@ -67,7 +61,7 @@ class ImmunefiCrawler:
 
 if __name__ == '__main__':
     ic = ImmunefiCrawler()
-    print(ic.get_all_count())
+    print(len(ic.get_all()))
     '''
     for x in ic.get_all():
         print(ic.get_assets(x))
