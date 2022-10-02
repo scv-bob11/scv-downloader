@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import urllib
 import requests
@@ -14,6 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 class ImmunefiCrawler:
     def __init__(self):
         self.immunefi_base_url = 'https://immunefi.com'
+        self.make_param = lambda x: '&'.join([f'{k}={"%2C".join(v)}' for k,v in x.items()])
     
 
     def get_assets(self, url):
@@ -29,6 +31,14 @@ class ImmunefiCrawler:
         return assets_list
 
 
+    def get_all_count(self, filters={'programType': ['Smart Contract']}):
+        params = self.make_param(filters)
+        r = requests.get(f'{self.immunefi_base_url}/explore/?filter={urllib.parse.quote(params)}')
+        bs = BeautifulSoup(r.content, 'html.parser')
+        text = bs.find_all(lambda tag:tag.name=="div" and "Showing" in tag.text)[-1].text
+        return int(re.search('\d+', text).group())
+
+
     def get_all(self, filters={'programType': ['Smart Contract']}):
         chr_options = webdriver.ChromeOptions()
         chr_options.add_argument('headless')
@@ -36,7 +46,7 @@ class ImmunefiCrawler:
         chr_options.add_argument("disable-gpu")
         driver = webdriver.Chrome(dotenv_values('.env')['CHROME_DRIVER'], chrome_options=chr_options)
 
-        params = '&'.join([f'{k}={"%2C".join(v)}' for k,v in filters.items()])
+        params = self.make_param(filters)
         driver.get(f'{self.immunefi_base_url}/explore/?filter={urllib.parse.quote(params)}')
 
         bounties = list()
@@ -57,5 +67,9 @@ class ImmunefiCrawler:
 
 if __name__ == '__main__':
     ic = ImmunefiCrawler()
+    print(ic.get_all_count())
+    '''
     for x in ic.get_all():
         print(ic.get_assets(x))
+    '''
+        
