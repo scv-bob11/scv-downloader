@@ -35,7 +35,9 @@ class GitDownloader:
 			return ""
 		parts = urlparse(url)
 		paths = parts.path.split("/")
-		git_url = "https://" + parts.netloc
+		git_url = "https://" + parts.netloc 
+		if len(paths) < 3: # repo를 제시 안한경우
+			return ""
 		for i in range(3):
 			git_url += paths[i] + "/"
 		print(git_url)
@@ -83,5 +85,5 @@ class GitDownloader:
 		# self.clear_etc(base_dir)
 
 if __name__ == '__main__':
-	urls = "https://github.com/fei-protocol/fei-protocol-core/blob/develop/protocol-configuration/mainnetAddresses.ts?utm_source=immunefi"
+	urls = "https://github.com/fei-protocol/fei-protocol-core"
 	GitDownloader().download("./", urls)
