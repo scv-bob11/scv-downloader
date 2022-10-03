@@ -47,7 +47,14 @@ class GitDownloader:
 
 	def git_clone(self, base_dir, git_url):
 		self.make_safe_dir(base_dir)
-		git.Git(base_dir).clone(git_url)
+		try:
+			git.Git(base_dir).clone(git_url) # 이미 git repo가 존재하는 경우는 pass
+		except git.exc.GitCommandError as err:
+			if "already exists and is not an empty directory" in str(err):
+				return
+			else:
+				print(err)
+				exit(-1) 
 
 	# 확장자가 .sol이 아니면 전부 지움.
 	def clear_etc(self, base_dir): 
