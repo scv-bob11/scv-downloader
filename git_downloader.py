@@ -1,7 +1,10 @@
+from asyncio import subprocess
 import git
 import os
 import sys
 from urllib.parse import urljoin, urlparse
+
+import subprocess
 
 class Test:
 	def __init__(self):
@@ -17,8 +20,11 @@ class Test:
 		return result
 
 class GitDownloader:
+	github_list = []
+
 	def __init__(self):
 		self.test = Test()
+		
 		return
 
 	def is_github(self, url):
@@ -35,7 +41,7 @@ class GitDownloader:
 			return ""
 		parts = urlparse(url)
 		paths = parts.path.split("/")
-		git_url = "https://" + parts.netloc 
+		git_url = "https://g:s@" + parts.netloc # username:password@ add
 		if len(paths) < 3: # repo를 제시 안한경우
 			return ""
 		for i in range(3):
@@ -53,6 +59,8 @@ class GitDownloader:
 			git.Git(base_dir).clone(git_url) # 이미 git repo가 존재하는 경우는 pass
 		except git.exc.GitCommandError as err:
 			if "already exists and is not an empty directory" in str(err):
+				return
+			if "Authentication failed" in str(err):
 				return
 			else:
 				print(err)
@@ -82,7 +90,27 @@ class GitDownloader:
 		if git_url == "":
 			return
 		self.git_clone(base_dir, git_url)
+		# if package.json exists, cd proejct; npm install
+
+		git_dir = git_url.split("/")
+		GitDownloader.github_list.append(base_dir + git_dir[-2])
+
+		# cmd = "cd " + base_dir + git_dir[-2] + "; sudo npm install --save --legacy-peer-deps --no-audit"
+		
+		# dir_list = os.listdir(base_dir + git_dir[-2])
+		# if "package.json" in dir_list:
+		# 	subprocess.Popen(cmd, shell=True) # 
+		# 	print("npm install")
+		# return
+		
+		# subprocess.call(cmd, shell=True)
+		
 		# self.clear_etc(base_dir)
+	def get_github_file_dir(self):
+		f = open("github_list", "w")
+		GitDownloader.github_list = set(GitDownloader.github_list)
+		for g in GitDownloader.github_list:
+			f.write(g+"\n")
 
 if __name__ == '__main__':
 	urls = "https://github.com/fei-protocol/fei-protocol-core"
