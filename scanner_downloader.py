@@ -79,6 +79,10 @@ class ScannerDownloader:
 			self.save_file(contract_name + ".sol", source_code, base_dir, is_impl)
 			# split_contract(res, impl)
 
+		# proxy contract == implement contract out
+		if contract == implement:
+			return
+
 		if is_proxy == str(1):
 			self.downloader(chain, implement, base_dir, True)
 
@@ -104,7 +108,7 @@ if __name__ == '__main__':
 	aur_not_verify_contract = "0x4eD2cF27Aa7873d0B8694f295DE7e32A7cd8da83"
 
 	SC = ScannerDownloader()
-	SC.downloader("ETH", eth_proxy_good_impl_contract, "./test/") 
+	SC.downloader("BSC", "0xF5BCE5077908a1b7370B9ae04AdC565EBd643966", "./test/") 
 
 
 
